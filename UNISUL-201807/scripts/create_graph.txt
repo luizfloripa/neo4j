@@ -1,0 +1,5 @@
+// create persons
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/person.txt" AS row
+CREATE (:Person {name: row.name, gender: row.gender, orientation: row.orientation});
+
