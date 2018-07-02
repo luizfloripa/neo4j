@@ -1,4 +1,4 @@
-"id";"name";"gender";"orientation"
+id;name;gender;orientation
 998;"Zofia";"female";"straight"
 989;"Wenona";"female";"straight"
 963;"Tomiko";"female";"straight"
