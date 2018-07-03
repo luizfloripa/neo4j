@@ -1,5 +1,44 @@
 // create persons
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/person.txt" AS row
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/person.txt" AS row
+FIELDTERMINATOR ';'
 CREATE (:Person {name: row.name, gender: row.gender, orientation: row.orientation});
 
+// create behaviors
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/behaviors.txt" AS row
+FIELDTERMINATOR ';'
+CREATE (:Behavior {name: row.name});
+
+// create places
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/places.txt" AS row
+FIELDTERMINATOR ';'
+CREATE (:Place {name: row.name});
+
+// create "HAS" relationships
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/has.txt" AS row
+FIELDTERMINATOR ';'
+MATCH (person:Person {name: row.person})
+MATCH (behavior:Behavior {name: row.behavior})
+MERGE (person)-[:HAS]->(behavior)
+
+// create "WANTS" relationships
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/wants.txt" AS row
+FIELDTERMINATOR ';'
+MATCH (person:Person {name: row.person})
+MATCH (behavior:Behavior {name: row.behavior})
+MERGE (person)-[:WANTS]->(behavior)
+
+// create "LIVES_IN" relationships
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/lives_in.txt" AS row
+FIELDTERMINATOR ';'
+MATCH (person:Person {name: row.person})
+MATCH (place:Place {name: row.place})
+MERGE (person)-[:LIVES_IN]->(place)
+
+// create unique constraint on name
+CREATE CONSTRAINT ON (p:Person) ASSERT p.name IS UNIQUE;
