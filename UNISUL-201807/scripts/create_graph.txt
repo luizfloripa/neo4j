@@ -22,7 +22,7 @@ LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j
 FIELDTERMINATOR ';'
 MATCH (person:Person {name: row.person})
 MATCH (behavior:Behavior {name: row.behavior})
-MERGE (person)-[:HAS]->(behavior)
+MERGE (person)-[:has]->(behavior)
 
 // create "WANTS" relationships
 USING PERIODIC COMMIT
@@ -30,7 +30,7 @@ LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j
 FIELDTERMINATOR ';'
 MATCH (person:Person {name: row.person})
 MATCH (behavior:Behavior {name: row.behavior})
-MERGE (person)-[:WANTS]->(behavior)
+MERGE (person)-[:wants]->(behavior)
 
 // create "LIVES_IN" relationships
 USING PERIODIC COMMIT
@@ -38,7 +38,7 @@ LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j
 FIELDTERMINATOR ';'
 MATCH (person:Person {name: row.person})
 MATCH (place:Place {name: row.place})
-MERGE (person)-[:LIVES_IN]->(place)
+MERGE (person)-[:lives_in]->(place)
 
 // create unique constraint on name
 CREATE CONSTRAINT ON (p:Person) ASSERT p.name IS UNIQUE;
