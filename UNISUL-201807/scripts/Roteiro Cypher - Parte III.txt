@@ -74,43 +74,43 @@ MATCH (p:Person {name:"Ivan"})
 SET p:Target
 RETURN p.name, LABELS(p) AS labels;
 
-//[30] Criar um novo nó
+//[30] Criar um novo nÃ³
 CREATE (p:Person {name:"Zeca"})
 RETURN p;
 
-//[31] Menor caminho entre dois nós
+//[31] Menor caminho entre dois nÃ³s
 MATCH (n:Person {name:"Emely"})
      ,(m:Person {name:"Ivan"})
 WITH n, m
 MATCH sp = shortestpath((n)-[:friend_of|plays_with|works_with*..5]-(m))
 RETURN sp
 
-//[32] Menores caminhos entre dois nós
+//[32] Menores caminhos entre dois nÃ³s
 MATCH (n:Person {name:"Emely"})
      ,(m:Person {name:"Ivan"})
 WITH n, m
 MATCH sp = allshortestpaths((n)-[:friend_of|plays_with|works_with*..5]-(m))
 RETURN sp
 
-//[33] Menores caminhos entre dois nós sem limite
+//[33] Menores caminhos entre dois nÃ³s sem limite
 MATCH (n:Person {name:"Emely"})
      ,(m:Person {name:"Ivan"})
 WITH n, m
 MATCH sp = allshortestpaths((n)-[:friend_of*]-(m))
 RETURN sp
 
-//[34] Tamanho, nós e relacionamentos de um path
+//[34] Tamanho, nÃ³s e relacionamentos de um path
 MATCH (n:Person {name:"Emely"})
      ,(m:Person {name:"Ivan"})
 WITH n, m
 MATCH sp = allshortestpaths((n)-[:friend_of*]-(m))
-RETURN LENGTH(SP)
+RETURN LENGTH(sp)
 OU
-RETURN NODES(SP)
+RETURN NODES(sp)
 OU
-RETURN RELATIONSHIPS(SP)
+RETURN RELATIONSHIPS(sp)
 
-//[35] Nó inicial e final de um relacionamento
+//[35] NÃ³ inicial e final de um relacionamento
 MATCH (n:Person {name:"Frank"})-[r:friend_of]->(m)
 RETURN STARTNODE(r)
 ou
