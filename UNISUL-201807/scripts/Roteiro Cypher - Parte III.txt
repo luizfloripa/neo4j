@@ -1,0 +1,121 @@
+//[18] create persons
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/person.txt" AS row
+FIELDTERMINATOR ';'
+CREATE (:Person {name: row.name, gender: row.gender, orientation: row.orientation});
+
+//[19] create behaviors
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/behaviors.txt" AS row
+FIELDTERMINATOR ';'
+CREATE (:Behavior {name: row.name});
+
+//[20] create places
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/places.txt" AS row
+FIELDTERMINATOR ';'
+CREATE (:Place {name: row.name});
+
+//[21] create "HAS" relationships
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/has.txt" AS row
+FIELDTERMINATOR ';'
+MATCH (person:Person {name: row.person})
+MATCH (behavior:Behavior {name: row.behavior})
+MERGE (person)-[:has]->(behavior)
+
+//[22] create "WANTS" relationships
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/wants.txt" AS row
+FIELDTERMINATOR ';'
+MATCH (person:Person {name: row.person})
+MATCH (behavior:Behavior {name: row.behavior})
+MERGE (person)-[:wants]->(behavior)
+
+//[23] create "LIVES_IN" relationships
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/avila-michel/neo4j/master/UNISUL-201807/data_files/lives_in.txt" AS row
+FIELDTERMINATOR ';'
+MATCH (person:Person {name: row.person})
+MATCH (place:Place {name: row.place})
+MERGE (person)-[:lives_in]->(place)
+
+//[24] create unique constraint on name
+CREATE CONSTRAINT ON (p:Person) ASSERT p.name IS UNIQUE;
+
+//[25] Busca algumas pessoas
+MATCH (p:Person)
+WHERE p.name in ["Emely", "Frank", "Ivan", "Kymberly"]
+RETURN p;
+
+//[26] Inclui um atributo na pessoa
+MATCH (p:Person {name:"Emely"})
+SET p.age = 18
+RETURN p;
+
+//[27] Atribui um label para a pessoa
+MATCH (p:Person {name:"Ivan"})
+SET p:Target
+RETURN p, LABELS(p);
+
+//[28] Encontra pessoas, cria relacionamentos e atributos
+MATCH
+   (emely:Person {name:"Emely"})
+  ,(frank:Person {name:"Frank"})
+  ,(ivan:Person {name:"Ivan"})
+  ,(kymberly:Person {name:"Kymberly"})
+MERGE
+  (emely)<-[:works_with]-(frank)-[:friend_of {since:"2001"}]->(ivan)-[:works_with {since:"2010"}]->(kymberly)-[:friend_of {since:"2000"}]->(emely)-[:plays_with {game:"Worms"}]->(frank)-[:friend_of {since:"2010"}]->(kymberly)
+RETURN
+  emely, frank, ivan, kymberly
+
+//[29] Atribui um label para a pessoa
+MATCH (p:Person {name:"Ivan"})
+SET p:Target
+RETURN p.name, LABELS(p) AS labels;
+
+//[30] Criar um novo nó
+CREATE (p:Person {name:"Zeca"})
+RETURN p;
+
+//[31] Menor caminho entre dois nós
+MATCH (n:Person {name:"Emely"})
+     ,(m:Person {name:"Ivan"})
+WITH n, m
+MATCH sp = shortestpath((n)-[:friend_of|plays_with|works_with*..5]-(m))
+RETURN sp
+
+//[32] Menores caminhos entre dois nós
+MATCH (n:Person {name:"Emely"})
+     ,(m:Person {name:"Ivan"})
+WITH n, m
+MATCH sp = allshortestpaths((n)-[:friend_of|plays_with|works_with*..5]-(m))
+RETURN sp
+
+//[33] Menores caminhos entre dois nós sem limite
+MATCH (n:Person {name:"Emely"})
+     ,(m:Person {name:"Ivan"})
+WITH n, m
+MATCH sp = allshortestpaths((n)-[:friend_of*]-(m))
+RETURN sp
+
+//[34] Tamanho, nós e relacionamentos de um path
+MATCH (n:Person {name:"Emely"})
+     ,(m:Person {name:"Ivan"})
+WITH n, m
+MATCH sp = allshortestpaths((n)-[:friend_of*]-(m))
+RETURN LENGTH(SP)
+OU
+RETURN NODES(SP)
+OU
+RETURN RELATIONSHIPS(SP)
+
+//[35] Nó inicial e final de um relacionamento
+MATCH (n:Person {name:"Frank"})-[r:friend_of]->(m)
+RETURN STARTNODE(r)
+ou
+RETURN ENDNODE(r)
+
+//[??] Remove relacionamentos
+MATCH (n:Person {name:"Emely"})-[rels:friend_of|plays_with|works_with*..5]-(m)
+FOREACH (r IN rels | delete r)
