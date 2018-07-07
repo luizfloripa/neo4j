@@ -1,0 +1,192 @@
+//[11] Para explorar no grafo
+MATCH
+  (susan:Person {name:"Susan"})
+ ,(hollis:Person {name:"Hollis"})
+ ,(susan)-[:wants]->(behavior)
+ ,(hollis)-[:has]->(behavior)
+RETURN
+  susan
+ ,behavior
+ ,hollis
+
+//[12] Qualquer tipo de relação com “behavior”
+MATCH
+  (target:Person {name:"Susan/Sacha"})
+ ,(target)-->(behavior:Behavior)<--(proposed)
+RETURN
+  proposed.name          AS proposed
+ ,COUNT(behavior)        AS behavior_count
+ ,COLLECT(behavior.name) AS behavior_list
+ORDER BY behavior_count DESC, proposed
+
+//[13] Apenas as combinações de relação corretas
+MATCH
+  (target:Person {name:"Susan/Sacha"})
+ ,(target)-[r1]->(behavior:Behavior)<-[r2]-(proposed)
+WHERE
+(
+  type(r1) = "has" AND type(r2) = "wants"
+)
+OR
+(
+  type(r1) = "wants" AND type(r2) = "has"
+)
+RETURN
+  proposed.name          AS proposed
+ ,COUNT(behavior)        AS behavior_count
+ ,COLLECT(behavior.name) AS behavior_list
+ORDER BY behavior_count DESC, proposed
+
+//[14] Mostrando mais atributos
+MATCH
+  (target:Person {name:"Susan/Sacha"})
+ ,(target)-[r1]->(behavior:Behavior)<-[r2]-(proposed)
+WHERE
+(
+ type(r1) = "has" AND type(r2) = "wants"
+)
+OR
+(
+ type(r1) = "wants" AND type(r2) = "has"
+)
+RETURN
+  target.name            AS target
+ ,target.gender          AS target_gender
+ ,target.orientation     AS target_orientation
+ ,proposed.name          AS proposed
+ ,proposed.gender        AS proposed_gender
+ ,proposed.orientation   AS proposed_orient
+ ,COUNT(behavior)        AS behavior_count
+ ,COLLECT(behavior.name) AS behavior_list
+ORDER BY behavior_count DESC
+
+//[15] Respeitando a orientação sexual e o gênero
+MATCH
+  (target:Person {name:"Susan/Sacha"})
+ ,(target)-[r1]->(behavior:Behavior)<-[r2]-(proposed)
+WHERE
+(
+  (
+    type(r1) = "has" AND type(r2) = "wants"
+  )
+  OR
+  (
+    type(r1) = "wants" AND type(r2) = "has"
+  )
+)
+AND target.orientation = proposed.orientation
+AND
+(
+  (
+        target.orientation = "straight"
+    AND target.gender <> proposed.gender
+  )
+  OR
+  (
+        target.orientation = "gay"
+    AND target.gender = proposed.gender
+  )
+)
+RETURN
+  target.name            AS target
+ ,target.gender          AS target_gender
+ ,target.orientation     AS target_orientation
+ ,proposed.name          AS proposed
+ ,proposed.gender        AS proposed_gender
+ ,proposed.orientation   AS proposed_orientation
+ ,COUNT(behavior)        AS behavior_count
+ ,COLLECT(behavior.name) AS behavior_list
+ORDER BY behavior_count DESC
+
+//[16] Mais atributos novamente
+MATCH
+  (target:Person {name:"Susan/Sacha"})
+ ,(target)-[r1]->(behavior:Behavior)<-[r2]-(proposed)
+WHERE
+(
+  (
+    type(r1) = "has" AND type(r2) = "wants"
+  )
+  OR
+  (
+    type(r1) = "wants" AND type(r2) = "has"
+  )
+)
+AND
+(
+  (
+        target.orientation = "straight"
+    AND target.orientation = proposed.orientation
+    AND target.gender <> proposed.gender
+  )
+  OR
+  (
+        target.orientation = "gay"
+    AND target.orientation = proposed.orientation
+    AND target.gender = proposed.gender
+  )
+)
+WITH
+  target
+ ,proposed 
+ ,COUNT(behavior)                 AS behavior_count
+ ,COLLECT(DISTINCT behavior.name) AS behavior_list
+ORDER BY behavior_count DESC
+MATCH (target)-->(target_place:Place),
+      (proposed)-->(proposed_place:Place)
+RETURN
+  target_place.name   AS target_place
+ ,proposed.name       AS proposed
+ ,proposed_place.name AS proposed_place
+ ,behavior_count
+ ,behavior_list
+ORDER BY behavior_count DESC, proposed
+LIMIT 50
+
+//[17] Priorizando candidatos da mesma cidade
+MATCH
+  (target:Person {name:"Susan/Sacha"})
+ ,(target)-[r1]->(behavior:Behavior)<-[r2]-(proposed)
+WHERE
+(
+  (
+    type(r1) = "has" AND type(r2) = "wants"
+  )
+  OR
+  (
+    type(r1) = "wants" AND type(r2) = "has"
+  )
+)
+AND
+(
+  (
+        target.orientation = "straight"
+    AND target.orientation = proposed.orientation
+    AND target.gender <> proposed.gender
+  )
+  OR
+  (
+        target.orientation = "gay"
+    AND target.orientation = proposed.orientation
+    AND target.gender = proposed.gender
+  )
+)
+WITH
+  target
+ ,proposed 
+ ,COUNT(behavior)                 AS behavior_count
+ ,COLLECT(DISTINCT behavior.name) AS behavior_list
+ORDER BY behavior_count DESC
+MATCH (target)-->(target_place:Place),
+      (proposed)-->(proposed_place:Place)
+RETURN
+  target_place.name   AS target_place
+ ,proposed.name       AS proposed
+ ,proposed_place.name AS proposed_place
+ ,behavior_count
+ ,behavior_list
+ORDER BY
+   target_place = proposed_place DESC
+  ,behavior_count DESC
+  ,proposed
+LIMIT 50
